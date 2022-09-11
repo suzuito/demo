@@ -21,7 +21,10 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    runtimeOnly("org.springframework.boot:spring-boot-devtools")
+    // SpringBoot RestControllerのエンドポイントのSwaggerドキュメント生成してくれる
+    // http://localhost:8080/swagger-ui/
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
