@@ -9,15 +9,15 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 
 // ----
 // Entity
 // ----
 // Blogの記事
 data class Article(
-    val id: String?,
-    val publishedAt: ZonedDateTime,
+    val id: String,
+    val publishedAt: OffsetDateTime?,
     val head: String,
     val description: String,
     val author: User,
@@ -37,13 +37,25 @@ data class ResponseList(
 // ----
 // Database
 // ----
-@Table("ARTICLES")
+@Table("articles")
 data class DBModelArticle(
-    @Id val id: String?,
-    // val publishedAt: ZonedDateTime,
+    @Id val id: String,
     val head: String,
     val description: String,
+    val publishedAt: OffsetDateTime?,
+    val createdAt: OffsetDateTime,
+    val updatedAt: OffsetDateTime?,
+    val deletedAt: OffsetDateTime?
     // val author: Author,
+)
+
+@Table("users")
+data class DBModelUser(
+    @Id val id: String,
+    val name: String,
+    val createdAt: OffsetDateTime,
+    val updatedAt: OffsetDateTime?,
+    val deletedAt: OffsetDateTime?
 )
 
 interface TableArticle : CrudRepository<DBModelArticle, String> {
@@ -55,14 +67,29 @@ interface TableArticle : CrudRepository<DBModelArticle, String> {
 class RepositoryBlog(
     val tableArticle: TableArticle,
 ) {
-    fun findArticles(): List<DBModelArticle> = tableArticle.findArticles()
+    fun findArticles(): List<Article> {
+        return tableArticle.findArticles().map {
+            println(it)
+            Article(
+                id = it.id,
+                head = it.head,
+                description = it.description,
+                publishedAt = it.publishedAt,
+                author = User("u1"),
+            )
+        }
+    }
+
     fun post(article: Article) {
         val v = DBModelArticle(
             id = article.id,
-            // publishedAt = article.publishedAt,
             head = article.head,
             description = article.description,
             // author = article.author,
+            publishedAt = null,
+            updatedAt = null,
+            deletedAt = null,
+            createdAt = OffsetDateTime.now(),
         )
         tableArticle.save(v)
     }
@@ -82,28 +109,28 @@ class ArticleResource(
             Article(
                 id = "3",
                 head = "head",
-                publishedAt = ZonedDateTime.now(),
+                publishedAt = OffsetDateTime.now(),
                 description = "desc",
                 author = User(id = "hoge"),
             ),
             Article(
                 id = "1",
                 head = "head",
-                publishedAt = ZonedDateTime.now(),
+                publishedAt = OffsetDateTime.now(),
                 description = "desc",
                 author = User(id = "hoge"),
             ),
             Article(
                 id = "1",
                 head = "head",
-                publishedAt = ZonedDateTime.now(),
+                publishedAt = OffsetDateTime.now(),
                 description = "desc",
                 author = User(id = "hoge"),
             ),
             Article(
                 id = "1",
                 head = "head",
-                publishedAt = ZonedDateTime.now(),
+                publishedAt = OffsetDateTime.now(),
                 description = "desc",
                 author = User(id = "hoge"),
             ),
@@ -117,57 +144,22 @@ class ArticleResource(
             defaultValue = "1990-01-01T00:00:00.000Z",
         )
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        sinceNotNull: ZonedDateTime,
+        sinceNotNull: OffsetDateTime,
         @RequestParam(
             value = "until",
             defaultValue = ""
         )
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        until: ZonedDateTime?,
+        until: OffsetDateTime?,
         @RequestParam(
             value = "tags",
             defaultValue = ""
         )
         tags: Array<String>,
     ): ResponseList {
-        val untilNotNull: ZonedDateTime = until ?: ZonedDateTime.now()
-        println("since $sinceNotNull")
-        println("until $untilNotNull")
-        for (v in tags) {
-            println("tag13 $v")
-        }
-        return ResponseList(
-            results = listOf(
-                Article(
-                    id = "1",
-                    head = "head",
-                    publishedAt = ZonedDateTime.now(),
-                    description = "desc",
-                    author = User(id = "hoge"),
-                ),
-                Article(
-                    id = "1",
-                    head = "head",
-                    publishedAt = ZonedDateTime.now(),
-                    description = "desc",
-                    author = User(id = "hoge"),
-                ),
-                Article(
-                    id = "1",
-                    head = "head",
-                    publishedAt = ZonedDateTime.now(),
-                    description = "desc",
-                    author = User(id = "hoge"),
-                ),
-                Article(
-                    id = "1",
-                    head = "head",
-                    publishedAt = ZonedDateTime.now(),
-                    description = "desc",
-                    author = User(id = "hoge"),
-                ),
-            )
-        )
+        val untilNotNull: OffsetDateTime = until ?: OffsetDateTime.now()
+        val articles = repositoryBlog.findArticles()
+        return ResponseList(results = articles)
     }
 }
 
