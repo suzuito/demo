@@ -4,3 +4,10 @@
 
 ### IntelliJ
 
+## トピック
+
+### Spring bootをベースとしたCLIアプリケーション開発
+
+実装例は[こちら](./main/kotlin/cli/hello/Main.kt)。
+
+application.propertiesファイルの`spring.main.web-application-type`を`none`にする。
